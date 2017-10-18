@@ -1,0 +1,39 @@
+---
+
+- hosts: redis-cluster
+  user: root
+  gather_facts: no
+  tasks:
+    - raw: apt update -qq && apt install python-apt -qqy
+
+- hosts: redis-cluster
+  user: root
+
+  vars:
+    redis_port: "{{ 7000 + (inventory_hostname.replace('redis', '') | int) }}"
+    redis_bind: "{{ ansible_default_ipv4.address }} 127.0.0.1"
+    redis_requirepass: MyStronkPw
+
+  tasks:
+    - name: Ensure redis-server repo installed
+      apt_repository:
+        repo: ppa:chris-lea/redis-server
+
+    - name: Ensure redis installed
+      apt:
+        pkg: redis-server
+        state: installed
+        update_cache: yes
+
+    - name: Configure redis
+      template:
+        src: redis.conf.j2
+        dest: /etc/redis/redis.conf
+      notify:
+        - redis restart
+
+  handlers:
+    - name: redis restart
+      service:
+        name: redis-server
+        state: restarted

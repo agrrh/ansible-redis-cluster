@@ -1,0 +1,3 @@
+[redis-cluster]
+# to be filled by hand in form:
+# redis[1-6] ansible_host=ip.add.re.ss
